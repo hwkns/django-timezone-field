@@ -21,7 +21,7 @@ def find_version(*file_paths):
 
 
 setup(
-    name='ambition-django-timezone-field',
+    name='django-timezone-field',
     version=find_version('timezone_field', '__init__.py'),
     author='Mike Fogel',
     author_email='mike@fogel.ca',
@@ -30,13 +30,13 @@ setup(
         'pytz timezone objects.'
     ),
     long_description=read('README.rst'),
-    url='http://github.com/mfogel/django-timezone-field/',
+    url='http://github.com/hwkns/django-timezone-field/',
     license='BSD',
     packages=[
         'timezone_field',
     ],
     install_requires=[
-        'Django>=1.11',
+        'Django>=1.9',
         'pytz'
     ],
     tests_require=[
@@ -53,6 +53,7 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Topic :: Utilities',

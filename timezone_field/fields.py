@@ -44,8 +44,9 @@ class TimeZoneField(models.Field):
         * instances of pytz.tzinfo.DstTzInfo and pytz.tzinfo.StaticTzInfo
         * the pytz.UTC singleton
 
-    Blank values are stored in the DB as the empty string. Timezones are stored
-    in their string representation.
+    Blank values are stored as null in the DB, not the empty string.  Thus, by
+    default the database column does not have a NOT NULL constraint. Timezones
+    are stored in their string representation.
 
     The `choices` kwarg can be specified as a list of either
     [<pytz.timezone>, <str>] or [<str>, <str>]. Internally, it is stored as
@@ -55,11 +56,11 @@ class TimeZoneField(models.Field):
     description = "A pytz timezone object"
 
     # NOTE: these defaults are excluded from migrations. If these are changed,
-    #       existing migration files will need to be accomodated.
+    #       existing migration files will need to be accommodated.
     CHOICES = [(pytz.timezone(tz), tz) for tz in pytz.common_timezones]
     MAX_LENGTH = 63
 
-    def __init__(self, choices=None, max_length=None, **kwargs):
+    def __init__(self, choices=None, max_length=None, null=True, **kwargs):
         if choices is None:
             choices = self.CHOICES
         else:
@@ -82,6 +83,7 @@ class TimeZoneField(models.Field):
 
         super(TimeZoneField, self).__init__(choices=choices,
                                             max_length=max_length,
+                                            null=null,
                                             **kwargs)
 
     def validate(self, value, model_instance):
@@ -96,10 +98,17 @@ class TimeZoneField(models.Field):
         if kwargs['max_length'] == self.MAX_LENGTH:
             del kwargs['max_length']
 
-        # django can't decontruct pytz objects, so transform choices
+        # django can't deconstruct pytz objects, so transform choices
         # to [<str>, <str>] format for writing out to the migration
         if 'choices' in kwargs:
             kwargs['choices'] = [(tz.zone, n) for tz, n in kwargs['choices']]
+
+        # The parent field's deconstruct() automatically strips the default null=False
+        # out of kwargs.  Because we have the opposite default, we have to swap things around.
+        if 'null' in kwargs and kwargs['null']:
+            del kwargs['null']
+        else:
+            kwargs['null'] = False
 
         return name, path, args, kwargs
 
@@ -127,7 +136,7 @@ class TimeZoneField(models.Field):
     def _get_python_and_db_repr(self, value):
         "Returns a tuple of (python representation, db representation)"
         if value is None or value == '':
-            return (None, '')
+            return (None, None)
         if is_pytz_instance(value):
             return (value, value.zone)
         if isinstance(value, six.string_types):
