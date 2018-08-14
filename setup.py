@@ -36,7 +36,7 @@ setup(
         'timezone_field',
     ],
     install_requires=[
-        'Django>=1.9',
+        'Django>=1.8',
         'pytz'
     ],
     tests_require=[
